@@ -21,6 +21,22 @@ def format_as_time(value):
 
 # Читаем файлы
 meeting = pd.read_excel("meeting.xlsx", dtype=str)
+
+# присваиваем номер
+meetingbase_df = pd.read_excel('meetingbase.xlsx', dtype=str)
+for column in meeting.columns:
+    if column not in meetingbase_df.columns:
+        meetingbase_df[column] = None
+row_exists = (meetingbase_df[meeting.columns] == meeting.iloc[0]).all(axis=1)
+if not row_exists.any():# Проверяем, существует ли уже такая строка в meetingbase_df
+    meetingbase_df['номер'] = pd.to_numeric(meetingbase_df['номер'], errors='coerce')
+    next_number = meetingbase_df['номер'].max() + 1
+    new_row = meeting.iloc[0].to_dict()# Добавление новой строки
+    new_row['номер'] = next_number
+    meetingbase_df = pd.concat([meetingbase_df, pd.DataFrame([new_row])], ignore_index=True)
+    meetingbase_df.to_excel('meetingbase.xlsx', index=False)
+else:
+    next_number = meetingbase_df.loc[row_exists, 'номер'].values[0]
 # Форматируем столбцы с датами
 for column in meeting.columns:
     if "Дата" in column:
@@ -35,7 +51,6 @@ for column in combined_data.columns:
 
 # Объединение данных на основе логина
 df = pd.merge(meeting, combined_data, left_on="User Login", right_on="Login", how="inner")
-
 df1 = pd.DataFrame({
     'metka': '{' + df.columns + '}',
     'chenge': df.iloc[0].values
@@ -45,7 +60,7 @@ agenda_rows = df1[df1['metka'].str.contains('Пункт повестки')]
 
 # Объединяем данные "Пункт повестки" в одну строку
 formatted_agenda = ' '.join([
-    f"{i + 1}. ({row.chenge}) </w:t><w:br/><w:t>"
+    f"{i + 1}. {row.chenge} </w:t><w:br/><w:t>"
     for i, row in enumerate(agenda_rows.itertuples())
 ])
 
@@ -132,7 +147,7 @@ for folder, subfolders, files in os.walk("/B"):
         fantasy_zip.write(os.path.join(folder, file), os.path.relpath(os.path.join(folder, file), "/B"))
 fantasy_zip.close()  # transform it to zip
 print("zip saved")
-name = "Uvedomlenie"
+name = "Uvedomlenie_" + str(next_number) + "_" + str(df1.loc[df1['metka'] == '{User Login}', 'chenge'].iloc[0])
 try:
     os.remove(name + ".docx")
     print(name, "removed")
