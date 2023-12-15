@@ -6,10 +6,6 @@ import re
 import openpyxl
 import win32com.client
 from openpyxl.utils.dataframe import dataframe_to_rows
-import numpy as np
-import comtypes.client
-import time
-
 reestr = "C:\\Users\\IMatveev\\PycharmProjects\\NVIwordchanche\\combined_data_with_votes.xlsx"
 def move_files(source_dir, next_number):
     target_dir = os.path.join(source_dir, str(next_number))
@@ -30,7 +26,6 @@ def docx_to_pdf(docx_filename, pdf_filename):
 def replace_words_in_excel(excel_file_path, replacements):  # Функция для замены слов в Excel документе
     # Загрузка документа Excel
     workbook = openpyxl.load_workbook(excel_file_path, keep_vba=True)
-
     # Итерация по всем листам в документе
     for sheet_name in workbook.sheetnames:
         sheet = workbook[sheet_name]
@@ -113,11 +108,12 @@ formatted_agenda = ' '.join([    # '{Пункт повестки}
     for i, row in enumerate(agenda_rows.itertuples())
 ])
 formatted_agenda1 = ' '.join([     # '{Пункт повестки с запятыми}
-    f'{i + 1}. {row.chenge} ", "'
+    f'{i + 1}. {row.chenge}", "'
     for i, row in enumerate(agenda_rows.itertuples())
 ])
 formatted_agenda1 = '"' + formatted_agenda1
 formatted_agenda1 = formatted_agenda1[:-3]
+formatted_agenda1 = re.sub(r'", "\s(\d+\.)', r'", "\1', formatted_agenda1)
 df1 = df1.fillna("")
 
 # Удаляем старые строки "Пункт повестки" и добавляем новую объединенную строку
@@ -130,7 +126,7 @@ df1.loc[len(df1)] = {'metka': "{номер голосования}", 'chenge': n
 
 df1.to_excel("asd.xlsx")
 
-pathwords = ("Уведомление_шаблон_для_заполнения.docx", "vote_str.php")  #  "Бюллетень_шаблон.docx"
+pathwords = ("Уведомление_шаблон_для_заполнения.docx", "vote_str.php")  # "Бюллетень_шаблон.docx"
 pathzip = "B.zip"
 df = df1  # для совместимости с копией замены по меткам
 
@@ -152,7 +148,7 @@ for pathword in pathwords:
         with open("/B/word/document.xml", 'r', encoding='utf-8') as f:
             content = f.read()
         # Применяем замену с использованием регулярного выражения
-        content = re.sub(r"(\{[^}{]*?)</w:t>[^}{]*?<w:t>([^}{]*?})", r"\1\2", content) #чтоб каждый раз не удалять лишнее
+        content = re.sub(r"(\{[^}{]*?)</w:t>[^}{]*?<w:t>([^}{]*?})", r"\1\2", content)  # чтоб каждый раз не удалять лишнее
         # Записываем обновленное содержимое обратно в файл
         with open("/B/word/document.xml", 'w', encoding='utf-8') as f:
             f.write(content)
@@ -164,8 +160,8 @@ for pathword in pathwords:
         get_all = f.readlines()
     print("xml opened")
 
-    if not pathword[-4:] == "docx":# меняем имя потому что в доке рождается копия а в других иначе в оригинале будет править
-        doc = pathword.split("_")[0] + "_" + str(next_number) + "_" + str(df1.loc[df1['metka'] == '{User Login}', 'chenge'].iloc[0]) + "." + pathword.split('.')[-1]
+    if not pathword[-4:] == "docx":  # меняем имя потому что в доке рождается копия а в других иначе в оригинале будет править+ "_" + str(df1.loc[df1['metka'] == '{User Login}', 'chenge'].iloc[0])
+        doc = pathword.split("_")[0] + "_" + str(next_number) + "." + pathword.split('.')[-1]
 
     with open(doc, 'w', encoding='utf-8') as f:  # look for { and chenge it
         for i in get_all:         # STARTS THE NUMBERING FROM 1 (by default it begins with 0)
@@ -223,8 +219,6 @@ for pathword in pathwords:
         current_directory = os.getcwd()
         name = os.path.join(current_directory, name)
         docx_to_pdf(name + ".docx", name + ".pdf")
-
-
     print("FINISH")
 
 
