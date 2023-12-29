@@ -57,9 +57,23 @@ def format_as_time(value):
         return parsed.strftime('%H:%M:%S')
     except:
         return value
-
+def replace_quotes(text):
+    try:
+        new_text = ""
+        quote_open = True
+        for char in text:
+            if char == '"':
+                new_text += '«' if quote_open else '»'
+                quote_open = not quote_open
+            else:
+                new_text += char
+        return new_text
+    except:
+        pass
 # Читаем файлы
 meeting = pd.read_excel("meeting.xlsx", dtype=str)
+for column in meeting.select_dtypes(include=['object']):
+    meeting[column] = meeting[column].apply(replace_quotes)
 
 # присваиваем номер
 meetingbase_df = pd.read_excel('meetingbase.xlsx', dtype=str)
