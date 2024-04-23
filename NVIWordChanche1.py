@@ -140,7 +140,7 @@ df1.loc[len(df1)] = {'metka': "{номер голосования}", 'chenge': n
 
 df1.to_excel("asd.xlsx")
 
-pathwords = ("Уведомление_шаблон_для_заполнения.docx", "vote_str.php")  # "Бюллетень_шаблон.docx"
+pathwords = ("Уведомление_шаблон_для_заполнения.docx", "vote_str.php", "шаблон.txt")  # "Бюллетень_шаблон.docx" имя вордовского документа захаркожено на 1 штуку
 pathzip = "B.zip"
 df = df1  # для совместимости с копией замены по меткам
 
@@ -195,8 +195,14 @@ for pathword in pathwords:
                     mem = 0
                     #found = re.sub(r"(\{[^}{]*?)</w:t>[^}{]*?<w:t>([^}{]*?})", r"\1\2", found)
                     #found = re.sub(r"</w:t>[^}{]*?(?=})", "", found)
-                    print(found)
-                    print(df[df["metka"] == found]["chenge"].values[0])
+                    filtered_df = df[df["metka"] == found]
+                    if not filtered_df.empty:
+                        print(f"Метка найдена: {found}")
+                        print(filtered_df["chenge"].values[0])
+                        tx = filtered_df["chenge"].values[0]
+                    else:
+                        print(f"Метка не найдена: {found}")
+
                     tx = df[df["metka"] == found]["chenge"].values[0]
                     try:
                         float(tx)
@@ -212,7 +218,7 @@ for pathword in pathwords:
     print("XML/txt chanched")
 
     if pathword[-4:] == "docx":
-        name = pathword.split("_")[0] + "_" + str(next_number) + "_" + str(df1.loc[df1['metka'] == '{User Login}', 'chenge'].iloc[0])#
+        name = "Уведомление_о_намерении"+ "_" + str(next_number) + "_" + str(df1.loc[df1['metka'] == '{User Login}', 'chenge'].iloc[0]) #pathword.split("_")[0] + "_" + str(next_number) + "_" + str(df1.loc[df1['metka'] == '{User Login}', 'chenge'].iloc[0])#
         try:
             os.remove("B.zip")
         except:
