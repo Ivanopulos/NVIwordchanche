@@ -13,7 +13,7 @@ def move_files(source_dir, next_number):
         os.makedirs(target_dir)
 
     for filename in os.listdir(source_dir):
-        if f"_{str(next_number)}" in filename:
+        if re.search(f"_{str(next_number)}[._]", filename):
             source_file = os.path.join(source_dir, filename)
             target_file = os.path.join(target_dir, filename)
             shutil.move(source_file, target_file)
@@ -175,7 +175,14 @@ for pathword in pathwords:
     print("xml opened")
 
     if not pathword[-4:] == "docx":  # меняем имя потому что в доке рождается копия а в других иначе в оригинале будет править+ "_" + str(df1.loc[df1['metka'] == '{User Login}', 'chenge'].iloc[0])
-        doc = pathword.split("_")[0] + "_" + str(next_number) + "." + pathword.split('.')[-1]
+        print(pathword,999)
+        if pathword == "шаблон.txt":
+            doc = str(df1.loc[df1['metka'] == '{Транскрипт}', 'chenge'].iloc[0]) + "_" + str(next_number) + ".txt"
+        elif pathword.split("_")[0] == pathword:#фактически не используется в пользу хардкода(
+            doc = pathword.split(".")[0] + "_" + str(next_number) + "." + pathword.split('.')[-1]#типа шиблон.тхт иначе с расширением дальше падает
+        else:
+            doc = pathword.split("_")[0] + "_" + str(next_number) + "." + pathword.split('.')[-1]
+        print(doc)
 
     with open(doc, 'w', encoding='utf-8') as f:  # look for { and chenge it
         for i in get_all:         # STARTS THE NUMBERING FROM 1 (by default it begins with 0)
